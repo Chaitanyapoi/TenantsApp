@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div><div class="stat-value">{{ total_users }}</div><div class="stat-label">Total Users</div></div>
+                <div class="stat-icon" style="background:#dbeafe;color:#2563eb"><i class="fas fa-users"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div><div class="stat-value">{{ total_properties }}</div><div class="stat-label">Properties</div></div>
+                <div class="stat-icon" style="background:#d1fae5;color:#059669"><i class="fas fa-building"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div><div class="stat-value">{{ total_tenants }}</div><div class="stat-label">Tenants</div></div>
+                <div class="stat-icon" style="background:#fef3c7;color:#d97706"><i class="fas fa-home"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div><div class="stat-value" style="font-size:1.2rem">₹{{ total_revenue }}</div><div class="stat-label">Total Revenue</div></div>
+                <div class="stat-icon" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-rupee-sign"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row g-3">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">Recent Payments</div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Tenant</th><th>Property</th><th>Amount</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for p in recent_payments %}
+                    <tr>
+                        <td class="small">{{ p.lease.tenant.full_name }}</td>
+                        <td class="small text-muted">{{ p.lease.property.title }}</td>
+                        <td class="fw-bold">₹{{ p.amount }}</td>
+                        <td>{% if p.status == 'completed' %}<span class="badge bg-success">Paid</span>{% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}</td>
+                    </tr>
+                    {% empty %}<tr><td colspan="4" class="text-center text-muted py-3 small">No payments yet</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h6 class="fw-bold mb-3">Property Status</h6>
+            <div class="d-flex justify-content-between mb-2"><span class="small">Available</span><span class="badge status-available">{{ available_properties }}</span></div>
+            <div class="progress mb-3" style="height:6px"><div class="progress-bar bg-success" style="width:{% widthratio available_properties total_properties 100 %}%"></div></div>
+            <div class="d-flex justify-content-between mb-2"><span class="small">Occupied</span><span class="badge status-occupied">{{ occupied_properties }}</span></div>
+            <div class="progress" style="height:6px"><div class="progress-bar bg-danger" style="width:{% widthratio occupied_properties total_properties 100 %}%"></div></div>
+        </div>
+        <div class="card p-3">
+            <h6 class="fw-bold mb-3">Quick Actions</h6>
+            <div class="d-grid gap-2">
+                <a href="/owners/list/" class="btn btn-sm btn-outline-primary">View All Owners</a>
+                <a href="/tenants/list/" class="btn btn-sm btn-outline-primary">View All Tenants</a>
+                <a href="/properties/" class="btn btn-sm btn-outline-primary">View Properties</a>
+                <a href="/payments/" class="btn btn-sm btn-outline-primary">All Payments</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

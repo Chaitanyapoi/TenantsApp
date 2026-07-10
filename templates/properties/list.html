@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% block title %}Properties{% endblock %}
+{% block page_title %}
+  {% if user.role == 'tenant' %}Browse Properties{% else %}My Properties{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.search-bar {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.search-city-wrap { position: relative; }
+.search-city-wrap .city-icon {
+    position: absolute; left: .85rem; top: 50%; transform: translateY(-50%);
+    color: #3b82f6; font-size: .95rem; pointer-events: none;
+}
+.search-city-wrap input { padding-left: 2.2rem; }
+.filter-chip {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: #dbeafe; color: #1d4ed8; border-radius: 20px;
+    padding: .25rem .75rem; font-size: .78rem; font-weight: 500;
+    text-decoration: none;
+}
+.filter-chip .remove { font-size: .7rem; opacity: .7; }
+.filter-chip .remove:hover { opacity: 1; }
+.result-meta { font-size: .82rem; color: #64748b; }
+.prop-badge-type {
+    position: absolute; top: .6rem; left: .6rem;
+    background: rgba(26,41,66,.8); color: #fff;
+    font-size: .65rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .5px; padding: 3px 8px; border-radius: 6px;
+}
+.prop-rent { font-size: 1.15rem; font-weight: 700; color: #1d4ed8; }
+.prop-rent sup { font-size: .7rem; font-weight: 600; }
+.prop-rent span { font-size: .72rem; color: #94a3b8; font-weight: 400; }
+.prop-img-wrap { position: relative; height: 165px; overflow: hidden; border-radius: 11px 11px 0 0; }
+.prop-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.property-card:hover .prop-img-wrap img { transform: scale(1.04); }
+.prop-no-img {
+    height: 165px; border-radius: 11px 11px 0 0;
+    background: linear-gradient(135deg,#1a2942,#2563eb);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 2.8rem;
+}
+.empty-state { text-align: center; padding: 3.5rem 1rem; color: #94a3b8; }
+.empty-state i { font-size: 3.5rem; display: block; margin-bottom: 1rem; opacity: .35; }
+.btn-search { background: #1a2942; color: #fff; border: none; border-radius: 8px; padding: .55rem 1.3rem; font-weight: 600; font-size: .88rem; }
+.btn-search:hover { background: #2563eb; color: #fff; }
+.btn-clear { font-size: .82rem; color: #64748b; text-decoration: none; }
+.btn-clear:hover { color: #ef4444; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ═══ Search / Filter Bar ═══ -->
+<div class="search-bar">
+  <form method="get" id="searchForm">
+    <div class="row g-2 align-items-end">
+
+      <!-- City search (primary — always visible) -->
+      <div class="col-12 col-md-4">
+        <label class="form-label small fw-bold mb-1">
+          <i class="fas fa-map-marker-alt text-primary me-1"></i>City / State / Pincode
+        </label>
+        <div class="search-city-wrap">
+          <i class="fas fa-search city-icon"></i>
+          <input
+            type="text"
+            name="city"
+            id="cityInput"
+            class="form-control"
+            placeholder="e.g. Hyderabad, Bengaluru…"
+            value="{{ city_query }}"
+            list="cityList"
+            autocomplete="off"
+          >
+          <datalist id="cityList">
+            {% for c in all_cities %}<option value="{{ c }}">{% endfor %}
+          </datalist>
+        </div>
+      </div>
+
+      <!-- Property type -->
+      <div class="col-6 col-md-2">
+        <label class="form-label small fw-bold mb-1">Type</label>
+        <select name="type" class="form-select form-select-sm" style="border-radius:8px">
+          <option value="">All Types</option>
+          {% for val, label in property_types %}
+            <option value="{{ val }}" {% if type_filter == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Bedrooms -->
+      <div class="col-6 col-md-1">
+        <label class="form-label small fw-bold mb-1">BHK</label>
+        <select name="bedrooms" class="form-select form-select-sm" style="border-radius:8px">
+          <option value="">Any</option>
+          {% for n in "12345" %}
+            <option value="{{ n }}" {% if beds_filter == n %}selected{% endif %}>{{ n }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Rent range -->
+      <div class="col-6 col-md-2">
+        <label class="form-label small fw-bold mb-1">Min Rent (₹)</label>
+        <input type="number" name="min_rent" class="form-control form-control-sm" style="border-radius:8px"
+               placeholder="0" value="{{ min_rent }}">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label small fw-bold mb-1">Max Rent (₹)</label>
+        <input type="number" name="max_rent" class="form-control form-control-sm" style="border-radius:8px"
+               placeholder="Any" value="{{ max_rent }}">
+      </div>
+
+      <!-- Buttons -->
+      <div class="col-12 col-md-1 d-flex gap-2">
+        <button type="submit" class="btn-search w-100"><i class="fas fa-search"></i></button>
+        {% if city_query or type_filter or min_rent or max_rent or beds_filter %}
+          <a href="/properties/" class="btn btn-sm btn-outline-secondary" style="border-radius:8px" title="Clear filters"><i class="fas fa-times"></i></a>
+        {% endif %}
+      </div>
+
+    </div>
+  </form>
+
+  <!-- Active filter chips -->
+  {% if city_query or type_filter or min_rent or max_rent or beds_filter %}
+  <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
+    <span class="result-meta">{{ result_count }} result{{ result_count|pluralize }} for:</span>
+    {% if city_query %}
+      <span class="filter-chip">
+        <i class="fas fa-map-marker-alt"></i> {{ city_query }}
+        <a href="?{% if type_filter %}type={{ type_filter }}&{% endif %}{% if min_rent %}min_rent={{ min_rent }}&{% endif %}{% if max_rent %}max_rent={{ max_rent }}&{% endif %}{% if beds_filter %}bedrooms={{ beds_filter }}{% endif %}" class="remove text-inherit">×</a>
+      </span>
+    {% endif %}
+    {% if type_filter %}
+      <span class="filter-chip"><i class="fas fa-building"></i> {{ type_filter|capfirst }}</span>
+    {% endif %}
+    {% if beds_filter %}
+      <span class="filter-chip"><i class="fas fa-bed"></i> {{ beds_filter }} BHK</span>
+    {% endif %}
+    {% if min_rent %}
+      <span class="filter-chip"><i class="fas fa-rupee-sign"></i> ≥ {{ min_rent }}</span>
+    {% endif %}
+    {% if max_rent %}
+      <span class="filter-chip"><i class="fas fa-rupee-sign"></i> ≤ {{ max_rent }}</span>
+    {% endif %}
+    <a href="/properties/" class="btn-clear ms-1"><i class="fas fa-times-circle me-1"></i>Clear all</a>
+  </div>
+  {% else %}
+  <div class="mt-2 result-meta">{{ result_count }} propert{{ result_count|pluralize:"y,ies" }} available</div>
+  {% endif %}
+</div>
+
+<!-- ═══ Add Property button (owners) ═══ -->
+{% if user.role == 'owner' %}
+<div class="d-flex justify-content-end mb-3">
+  <a href="/properties/create/" class="btn btn-primary btn-sm">
+    <i class="fas fa-plus me-1"></i>Add Property
+  </a>
+</div>
+{% endif %}
+
+<!-- ═══ Property Cards ═══ -->
+{% if properties %}
+<div class="row g-3">
+{% for p in properties %}
+  <div class="col-sm-6 col-xl-4">
+    <div class="card property-card h-100" style="border-radius:12px;overflow:hidden;">
+
+      <!-- Image -->
+      {% if p.image %}
+        <div class="prop-img-wrap">
+          <img src="{{ p.image.url }}" alt="{{ p.title }}">
+          <span class="prop-badge-type">{{ p.get_property_type_display }}</span>
+        </div>
+      {% else %}
+        <div class="prop-no-img">
+          <i class="fas fa-building"></i>
+          <span class="prop-badge-type" style="top:.6rem;left:.6rem">{{ p.get_property_type_display }}</span>
+        </div>
+      {% endif %}
+
+      <div class="card-body p-3">
+        <!-- Title + status -->
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <h6 class="fw-bold mb-0 me-2" style="line-height:1.3">{{ p.title }}</h6>
+          <span class="badge flex-shrink-0
+            {% if p.status == 'available' %}status-available
+            {% elif p.status == 'occupied' %}status-occupied
+            {% else %}status-maintenance{% endif %}">
+            {{ p.get_status_display }}
+          </span>
+        </div>
+
+        <!-- Location -->
+        <p class="text-muted small mb-2">
+          <i class="fas fa-map-marker-alt me-1 text-primary"></i>
+          {{ p.city }}, {{ p.state }}
+        </p>
+
+        <!-- Specs row -->
+        <div class="d-flex gap-3 mb-3 small text-muted">
+          <span><i class="fas fa-bed me-1"></i>{{ p.bedrooms }} BHK</span>
+          <span><i class="fas fa-bath me-1"></i>{{ p.bathrooms }}</span>
+          <span><i class="fas fa-ruler-combined me-1"></i>{{ p.area_sqft }} sqft</span>
+        </div>
+
+        <!-- Amenity pills (max 3) -->
+        {% if p.amenities %}
+        <div class="d-flex flex-wrap gap-1 mb-3">
+          {% for a in p.get_amenities_list|slice:":3" %}
+            <span class="badge bg-light text-secondary border" style="font-size:.68rem">{{ a }}</span>
+          {% endfor %}
+          {% with total=p.get_amenities_list|length %}
+            {% if total > 3 %}<span class="badge bg-light text-secondary border" style="font-size:.68rem">+{{ total|add:"-3" }} more</span>{% endif %}
+          {% endwith %}
+        </div>
+        {% endif %}
+
+        <!-- Rent + actions -->
+        <div class="d-flex justify-content-between align-items-center mt-auto">
+          <div class="prop-rent">
+            <sup>₹</sup>{{ p.monthly_rent }}<span>/mo</span>
+          </div>
+          <div class="d-flex gap-1">
+            <a href="/properties/{{ p.pk }}/" class="btn btn-sm btn-outline-primary" style="border-radius:7px">
+              <i class="fas fa-eye me-1"></i>View
+            </a>
+            {% if user.role == 'owner' %}
+            <a href="/properties/{{ p.pk }}/edit/" class="btn btn-sm btn-outline-secondary" style="border-radius:7px">
+              <i class="fas fa-edit"></i>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+
+{% else %}
+<!-- Empty state -->
+<div class="card">
+  <div class="empty-state">
+    <i class="fas fa-search-location"></i>
+    {% if city_query or type_filter or min_rent or max_rent or beds_filter %}
+      <h5 class="fw-bold mb-1">No properties match your filters</h5>
+      <p class="mb-3 small">Try a different city, adjust the rent range, or clear all filters.</p>
+      <a href="/properties/" class="btn btn-primary btn-sm">Clear Filters</a>
+    {% else %}
+      <h5 class="fw-bold mb-1">No properties found</h5>
+      {% if user.role == 'owner' %}
+        <p class="mb-3 small">Add your first property to get started.</p>
+        <a href="/properties/create/" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Add Property</a>
+      {% else %}
+        <p class="mb-0 small">Check back soon — new properties are being listed.</p>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-submit when type/bedrooms/rent selects change (city requires Enter or click)
+document.querySelectorAll('select[name="type"], select[name="bedrooms"]').forEach(el => {
+    el.addEventListener('change', () => document.getElementById('searchForm').submit());
+});
+// City input: submit on Enter
+document.getElementById('cityInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('searchForm').submit(); }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Make Payment{% endblock %}
+{% block page_title %}Make a Payment{% endblock %}
+
+{% block extra_css %}
+<style>
+.lease-summary {
+    background: linear-gradient(135deg, #1a2942 0%, #1e3a5f 100%);
+    border-radius: 14px; color: #fff; padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.lease-summary .label { font-size: .72rem; opacity: .65; text-transform: uppercase; letter-spacing: .5px; }
+.lease-summary .value { font-size: 1rem; font-weight: 600; margin-top: .1rem; }
+.lease-summary .rent-badge {
+    background: rgba(255,255,255,.15); border-radius: 10px;
+    padding: .4rem .9rem; font-size: 1.5rem; font-weight: 700;
+}
+.method-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: .6rem; }
+.method-card {
+    border: 2px solid #e2e8f0; border-radius: 10px; padding: .75rem .5rem;
+    text-align: center; cursor: pointer; transition: all .15s;
+    user-select: none;
+}
+.method-card input { display: none; }
+.method-card i { font-size: 1.3rem; display: block; margin-bottom: .3rem; color: #64748b; }
+.method-card span { font-size: .75rem; font-weight: 500; color: #374151; }
+.method-card.selected, .method-card:has(input:checked) {
+    border-color: #3b82f6; background: #dbeafe;
+}
+.method-card.selected i, .method-card:has(input:checked) i { color: #2563eb; }
+.step-badge {
+    width: 26px; height: 26px; border-radius: 50%; background: #1a2942;
+    color: #fff; font-size: .75rem; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.pending-notice {
+    background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px;
+    padding: .75rem 1rem; font-size: .82rem; color: #92400e;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-7">
+
+  <!-- ── Lease summary card ── -->
+  <div class="lease-summary">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div>
+        <div class="label">Property</div>
+        <div class="value fs-5">{{ lease.property.title }}</div>
+        <div class="mt-1" style="font-size:.82rem;opacity:.7">
+          <i class="fas fa-map-marker-alt me-1"></i>
+          {{ lease.property.address }}, {{ lease.property.city }}
+        </div>
+        <div class="mt-2" style="font-size:.8rem;opacity:.65">
+          Lease: {{ lease.start_date }} → {{ lease.end_date }}
+        </div>
+      </div>
+      <div class="text-end">
+        <div class="label mb-1">Monthly Rent</div>
+        <div class="rent-badge">₹{{ lease.monthly_rent }}</div>
+        <div class="mt-2" style="font-size:.75rem;opacity:.6">Security Deposit: ₹{{ lease.security_deposit }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Pending-approval notice ── -->
+  <div class="pending-notice mb-4">
+    <i class="fas fa-info-circle me-2"></i>
+    Your payment will be marked <strong>Pending</strong> until your property owner confirms it.
+    You'll see the updated status in your payment history.
+  </div>
+
+  <!-- ── Payment form ── -->
+  <div class="card p-4">
+
+    <form method="post" novalidate>{% csrf_token %}
+
+      <!-- Step 1: Amount & type -->
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="step-badge">1</span>
+        <h6 class="fw-bold mb-0">Amount &amp; Payment Type</h6>
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label small fw-bold">Amount (₹) *</label>
+          {{ form.amount }}
+          {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold">Payment For *</label>
+          {{ form.payment_type }}
+          {% if form.payment_type.errors %}<div class="text-danger small mt-1">{{ form.payment_type.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Step 2: Payment method -->
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="step-badge">2</span>
+        <h6 class="fw-bold mb-0">Payment Method *</h6>
+      </div>
+      <div class="method-cards mb-4">
+        {% for val, label in form.fields.payment_method.choices %}
+        <label class="method-card" id="mc-{{ val }}">
+          <input type="radio" name="payment_method" value="{{ val }}"
+            {% if form.payment_method.value == val or forloop.first %}checked{% endif %}>
+          {% if val == 'upi' %}<i class="fas fa-mobile-alt"></i>
+          {% elif val == 'bank_transfer' %}<i class="fas fa-university"></i>
+          {% elif val == 'cash' %}<i class="fas fa-money-bill-wave"></i>
+          {% elif val == 'cheque' %}<i class="fas fa-file-alt"></i>
+          {% else %}<i class="fas fa-globe"></i>{% endif %}
+          <span>{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      {% if form.payment_method.errors %}<div class="text-danger small mb-3">{{ form.payment_method.errors }}</div>{% endif %}
+
+      <!-- Step 3: Dates & reference -->
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="step-badge">3</span>
+        <h6 class="fw-bold mb-0">Dates &amp; Reference</h6>
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label small fw-bold">Payment Date *</label>
+          {{ form.payment_date }}
+          {% if form.payment_date.errors %}<div class="text-danger small mt-1">{{ form.payment_date.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold">Due Date *</label>
+          {{ form.due_date }}
+          {% if form.due_date.errors %}<div class="text-danger small mt-1">{{ form.due_date.errors }}</div>{% endif %}
+        </div>
+        <div class="col-12">
+          <label class="form-label small fw-bold">Transaction / Reference ID</label>
+          {{ form.transaction_id }}
+        </div>
+        <div class="col-12">
+          <label class="form-label small fw-bold">Notes</label>
+          {{ form.notes }}
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="d-flex gap-3 align-items-center">
+        <button type="submit" class="btn btn-primary px-4 py-2 fw-bold">
+          <i class="fas fa-paper-plane me-2"></i>Submit Payment
+        </button>
+        <a href="/payments/" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Highlight selected payment method card
+document.querySelectorAll('.method-card').forEach(card => {
+    const radio = card.querySelector('input[type=radio]');
+    // Set initial state
+    if (radio.checked) card.classList.add('selected');
+    card.addEventListener('click', () => {
+        document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        radio.checked = true;
+    });
+});
+
+// Default today's date for payment_date if blank
+const pdInput = document.querySelector('input[name="payment_date"]');
+if (pdInput && !pdInput.value) {
+    pdInput.value = new Date().toISOString().split('T')[0];
+}
+</script>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Tenants{% endblock %}
+{% block page_title %}Tenants{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Tenants <span class="badge bg-secondary ms-1">{{ tenants|length }}</span></span>
+        {% if user.role == 'admin' or user.is_staff %}<a href="/tenants/leases/create/" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>New Lease</a>{% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Tenant</th><th>Contact</th><th>Occupation</th><th>Active Lease</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for tenant in tenants %}
+            <tr>
+                <td><div class="fw-bold">{{ tenant.full_name }}</div><div class="text-muted small">{{ tenant.user.email }}</div></td>
+                <td>{{ tenant.user.phone|default:"—" }}</td>
+                <td>{{ tenant.occupation|default:"—" }}</td>
+                <td>{% with lease=tenant.active_lease %}{% if lease %}<span class="badge status-occupied">{{ lease.property.title }}</span>{% else %}<span class="badge bg-light text-muted">None</span>{% endif %}{% endwith %}</td>
+                <td><a href="/tenants/leases/" class="btn btn-sm btn-outline-primary">Leases</a></td>
+            </tr>
+            {% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No tenants found</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

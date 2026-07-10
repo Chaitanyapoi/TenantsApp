@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Edit Owner Profile{% endblock %}
+{% block page_title %}Edit Owner Profile{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-8">
+    <div class="card p-4">
+        <h6 class="fw-bold mb-3">Owner Profile</h6>
+        <form method="post">{% csrf_token %}
+            <div class="row g-3">
+                <div class="col-12"><label class="form-label small fw-bold">Full Name</label>{{ form.full_name }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Aadhaar</label>{{ form.aadhaar_number }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">PAN</label>{{ form.pan_number }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Bank Account</label>{{ form.bank_account }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">IFSC</label>{{ form.ifsc_code }}</div>
+                <div class="col-12"><label class="form-label small fw-bold">Emergency Contact</label>{{ form.emergency_contact }}</div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Update Profile</button>
+        </form>
+    </div>
+</div></div>
+{% endblock %}

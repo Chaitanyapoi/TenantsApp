@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Edit Tenant Profile{% endblock %}
+{% block page_title %}Edit Tenant Profile{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-8">
+    <div class="card p-4">
+        <h6 class="fw-bold mb-3">Tenant Profile</h6>
+        <form method="post">{% csrf_token %}
+            <div class="row g-3">
+                <div class="col-12"><label class="form-label small fw-bold">Full Name</label>{{ form.full_name }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Aadhaar</label>{{ form.aadhaar_number }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Occupation</label>{{ form.occupation }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Employer</label>{{ form.employer }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Monthly Income</label>{{ form.monthly_income }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Emergency Name</label>{{ form.emergency_contact_name }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Emergency Phone</label>{{ form.emergency_contact_phone }}</div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Update Profile</button>
+        </form>
+    </div>
+</div></div>
+{% endblock %}

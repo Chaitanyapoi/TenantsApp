@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Edit Property{% endblock %}
+{% block page_title %}Edit Property{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-9">
+    <div class="card p-4">
+        <h6 class="fw-bold mb-4">Edit: {{ property.title }}</h6>
+        <form method="post" enctype="multipart/form-data">{% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-8"><label class="form-label small fw-bold">Title</label>{{ form.title }}</div>
+                <div class="col-md-4"><label class="form-label small fw-bold">Type</label>{{ form.property_type }}</div>
+                <div class="col-12"><label class="form-label small fw-bold">Address</label>{{ form.address }}</div>
+                <div class="col-md-4"><label class="form-label small fw-bold">City</label>{{ form.city }}</div>
+                <div class="col-md-4"><label class="form-label small fw-bold">State</label>{{ form.state }}</div>
+                <div class="col-md-4"><label class="form-label small fw-bold">Pincode</label>{{ form.pincode }}</div>
+                <div class="col-md-3"><label class="form-label small fw-bold">Bedrooms</label>{{ form.bedrooms }}</div>
+                <div class="col-md-3"><label class="form-label small fw-bold">Bathrooms</label>{{ form.bathrooms }}</div>
+                <div class="col-md-3"><label class="form-label small fw-bold">Area (sqft)</label>{{ form.area_sqft }}</div>
+                <div class="col-md-3"><label class="form-label small fw-bold">Status</label>{{ form.status }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Monthly Rent</label>{{ form.monthly_rent }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Security Deposit</label>{{ form.security_deposit }}</div>
+                <div class="col-12"><label class="form-label small fw-bold">Description</label>{{ form.description }}</div>
+                <div class="col-md-8"><label class="form-label small fw-bold">Amenities</label>{{ form.amenities }}</div>
+                <div class="col-md-4"><label class="form-label small fw-bold">Image</label>{{ form.image }}</div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a href="/properties/" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div></div>
+{% endblock %}

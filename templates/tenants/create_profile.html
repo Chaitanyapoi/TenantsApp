@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Complete Tenant Profile{% endblock %}
+{% block page_title %}Complete Your Tenant Profile{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-8">
+    <div class="card p-4">
+        <div class="text-center mb-4">
+            <div style="width:60px;height:60px;background:#d1fae5;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:1.5rem;color:#059669;margin-bottom:.75rem"><i class="fas fa-home"></i></div>
+            <h5 class="fw-bold">Tenant Profile Setup</h5>
+            <p class="text-muted small">Complete your details to find and manage your rental</p>
+        </div>
+        <form method="post">{% csrf_token %}
+            <div class="row g-3">
+                <div class="col-12"><label class="form-label small fw-bold">Full Name *</label>{{ form.full_name }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Aadhaar Number</label>{{ form.aadhaar_number }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Occupation</label>{{ form.occupation }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Employer</label>{{ form.employer }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Monthly Income (₹)</label>{{ form.monthly_income }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Emergency Contact Name</label>{{ form.emergency_contact_name }}</div>
+                <div class="col-md-6"><label class="form-label small fw-bold">Emergency Contact Phone</label>{{ form.emergency_contact_phone }}</div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4">Save Profile</button>
+                <a href="/dashboard/tenant/" class="btn btn-outline-secondary">Skip for Now</a>
+            </div>
+        </form>
+    </div>
+</div></div>
+{% endblock %}

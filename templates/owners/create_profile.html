@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Complete Owner Profile{% endblock %}
+{% block page_title %}Complete Your Owner Profile{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card p-4">
+            <div class="text-center mb-4">
+                <div style="width:60px;height:60px;background:#dbeafe;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:1.5rem;color:#2563eb;margin-bottom:.75rem"><i class="fas fa-user-tie"></i></div>
+                <h5 class="fw-bold">Owner Profile Setup</h5>
+                <p class="text-muted small">Fill in your details to start managing properties</p>
+            </div>
+            <form method="post">{% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-12"><label class="form-label small fw-bold">Full Name *</label>{{ form.full_name }}</div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">Aadhaar Number</label>{{ form.aadhaar_number }}</div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">PAN Number</label>{{ form.pan_number }}</div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">Bank Account</label>{{ form.bank_account }}</div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">IFSC Code</label>{{ form.ifsc_code }}</div>
+                    <div class="col-12"><label class="form-label small fw-bold">Emergency Contact</label>{{ form.emergency_contact }}</div>
+                </div>
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">Save Profile</button>
+                    <a href="/dashboard/owner/" class="btn btn-outline-secondary">Skip for Now</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}Tenant Dashboard{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+{% block content %}
+
+<div class="mb-3">
+  <span class="text-muted small">Welcome back, </span>
+  <strong>{{ tenant.full_name }}</strong>
+</div>
+
+<!-- ── Stat cards ── -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value" style="font-size:1.15rem">₹{{ total_paid }}</div>
+          <div class="stat-label">Total Paid</div>
+        </div>
+        <div class="stat-icon" style="background:#d1fae5;color:#059669"><i class="fas fa-check-circle"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ pending_payments }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-icon" style="background:#fef3c7;color:#d97706"><i class="fas fa-clock"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{% if lease %}Active{% else %}None{% endif %}</div>
+          <div class="stat-label">Lease Status</div>
+        </div>
+        <div class="stat-icon" style="background:#dbeafe;color:#2563eb"><i class="fas fa-file-contract"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value" style="font-size:1.15rem">{% if lease %}₹{{ lease.monthly_rent }}{% else %}—{% endif %}</div>
+          <div class="stat-label">Monthly Rent</div>
+        </div>
+        <div class="stat-icon" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-rupee-sign"></i></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Quick action buttons ── -->
+<div class="d-flex flex-wrap gap-2 mb-4">
+  <a href="/properties/" class="btn btn-outline-primary btn-sm">
+    <i class="fas fa-search me-1"></i>Search Properties by City
+  </a>
+  {% if lease %}
+  <a href="/payments/pay/" class="btn btn-primary btn-sm">
+    <i class="fas fa-rupee-sign me-1"></i>Make a Payment
+  </a>
+  {% endif %}
+  <a href="/payments/" class="btn btn-outline-secondary btn-sm">
+    <i class="fas fa-receipt me-1"></i>Payment History
+  </a>
+  <a href="/tenants/leases/" class="btn btn-outline-secondary btn-sm">
+    <i class="fas fa-file-contract me-1"></i>My Lease
+  </a>
+</div>
+
+{% if lease %}
+<div class="row g-3">
+  <!-- Left: lease info + owner -->
+  <div class="col-md-5">
+    <div class="card p-3 mb-3">
+      <h6 class="fw-bold mb-3"><i class="fas fa-home me-2 text-primary"></i>Current Property</h6>
+      <div class="fw-bold fs-6">{{ lease.property.title }}</div>
+      <div class="text-muted small mb-3">
+        <i class="fas fa-map-marker-alt me-1"></i>{{ lease.property.address }}, {{ lease.property.city }}
+      </div>
+      <div class="row g-1 small">
+        <div class="col-6 text-muted">Monthly Rent</div>
+        <div class="col-6 fw-bold text-primary">₹{{ lease.monthly_rent }}</div>
+        <div class="col-6 text-muted">Lease Start</div>
+        <div class="col-6">{{ lease.start_date }}</div>
+        <div class="col-6 text-muted">Lease End</div>
+        <div class="col-6">{{ lease.end_date }}</div>
+        <div class="col-6 text-muted">Status</div>
+        <div class="col-6"><span class="badge bg-success">{{ lease.get_status_display }}</span></div>
+      </div>
+    </div>
+
+    <div class="card p-3">
+      <h6 class="fw-bold mb-2"><i class="fas fa-user-tie me-2 text-primary"></i>Owner</h6>
+      <div class="fw-bold">{{ lease.property.owner.full_name }}</div>
+      <div class="text-muted small">{{ lease.property.owner.user.phone|default:"—" }}</div>
+      <div class="text-muted small">{{ lease.property.owner.user.email }}</div>
+    </div>
+  </div>
+
+  <!-- Right: recent payments -->
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Recent Payments</span>
+        <div class="d-flex gap-2">
+          <a href="/payments/pay/" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Pay Now</a>
+          <a href="/payments/" class="btn btn-outline-secondary btn-sm">All</a>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead>
+          <tbody>
+          {% for p in recent_payments %}
+          <tr>
+            <td class="small">{{ p.payment_date }}</td>
+            <td class="small text-muted">{{ p.get_payment_type_display }}</td>
+            <td class="fw-bold">₹{{ p.amount }}</td>
+            <td class="small">{{ p.get_payment_method_display }}</td>
+            <td>
+              {% if p.status == 'completed' %}<span class="badge bg-success">Paid</span>
+              {% elif p.status == 'pending' %}<span class="badge bg-warning text-dark">Pending</span>
+              {% else %}<span class="badge bg-danger">{{ p.get_status_display }}</span>{% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-3 small">
+              No payments yet.
+              <a href="/payments/pay/" class="ms-1 text-primary">Make your first payment →</a>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<!-- No active lease -->
+<div class="card p-4 text-center" style="max-width:480px;margin:0 auto">
+  <div style="font-size:2.8rem;color:#94a3b8" class="mb-3"><i class="fas fa-search-location"></i></div>
+  <h5 class="fw-bold">No Active Lease</h5>
+  <p class="text-muted small mb-3">Browse available properties in your city and get in touch with owners.</p>
+  <a href="/properties/" class="btn btn-primary" style="width:fit-content;margin:0 auto">
+    <i class="fas fa-search me-1"></i>Search Properties
+  </a>
+</div>
+{% endif %}
+
+{% endblock %}

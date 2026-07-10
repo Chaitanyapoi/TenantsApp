@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — TenantPro</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body{background:linear-gradient(135deg,#1a2942 0%,#2563eb 100%);min-height:100vh;display:flex;align-items:center;font-family:'Segoe UI',sans-serif}
+        .auth-card{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;max-width:420px;width:100%}
+        .auth-header{background:#1a2942;color:#fff;padding:2rem;text-align:center}
+        .auth-header .logo{width:56px;height:56px;background:#3b82f6;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1rem}
+        .auth-body{padding:2rem}
+        .form-control{border-radius:0 8px 8px 0;padding:.65rem 1rem;border:1.5px solid #e2e8f0}
+        .form-control:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+        .input-group-text{border-radius:8px 0 0 8px;border:1.5px solid #e2e8f0;background:#f8fafc}
+        .btn-login{background:#1a2942;border:none;padding:.75rem;font-weight:600;border-radius:8px;width:100%;color:#fff;transition:background .2s}
+        .btn-login:hover{background:#2563eb}
+    </style>
+</head>
+<body>
+<div class="container"><div class="row justify-content-center"><div class="col-12 col-sm-10 col-md-8 col-lg-5">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="logo"><i class="fas fa-building"></i></div>
+            <h4 class="fw-bold mb-1">TenantPro</h4>
+            <p class="mb-0 opacity-75" style="font-size:.9rem">Property Management System</p>
+        </div>
+        <div class="auth-body">
+            <h5 class="fw-bold mb-1">Welcome back</h5>
+            <p class="text-muted mb-3" style="font-size:.85rem">Sign in to your account</p>
+            {% if messages %}{% for m in messages %}<div class="alert alert-danger py-2 small">{{m}}</div>{% endfor %}{% endif %}
+            <form method="post">{% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Username</label>
+                    <div class="input-group"><span class="input-group-text"><i class="fas fa-user text-muted"></i></span>{{ form.username }}</div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold">Password</label>
+                    <div class="input-group"><span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>{{ form.password }}</div>
+                </div>
+                <button type="submit" class="btn-login">Sign In <i class="fas fa-arrow-right ms-1"></i></button>
+            </form>
+            <hr class="my-3">
+            <p class="text-center mb-0 small text-muted">Don't have an account? <a href="/accounts/signup/" class="text-primary fw-bold">Create one</a></p>
+        </div>
+    </div>
+</div></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body></html>

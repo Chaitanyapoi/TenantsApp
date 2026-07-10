@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Leases{% endblock %}
+{% block page_title %}Lease Agreements{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <div></div>
+    {% if user.role in 'admin,owner' %}<a href="/tenants/leases/create/" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>New Lease</a>{% endif %}
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Tenant</th><th>Property</th><th>Period</th><th>Rent</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for lease in leases %}
+            <tr>
+                <td class="fw-bold">{{ lease.tenant.full_name }}</td>
+                <td>{{ lease.property.title }}</td>
+                <td class="small">{{ lease.start_date }} → {{ lease.end_date }}</td>
+                <td>₹{{ lease.monthly_rent }}/mo</td>
+                <td>
+                    {% if lease.status == 'active' %}<span class="badge bg-success">Active</span>
+                    {% elif lease.status == 'expired' %}<span class="badge bg-secondary">Expired</span>
+                    {% elif lease.status == 'terminated' %}<span class="badge bg-danger">Terminated</span>
+                    {% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+                </td>
+            </tr>
+            {% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No leases found</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

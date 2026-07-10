@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Payments{% endblock %}
+{% block page_title %}Payment History{% endblock %}
+
+{% block extra_css %}
+<style>
+.summary-strip {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 1rem 1.5rem; margin-bottom: 1.25rem;
+    display: flex; gap: 2rem; flex-wrap: wrap;
+}
+.summary-strip .item { display: flex; flex-direction: column; }
+.summary-strip .s-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .5px; color: #64748b; }
+.summary-strip .s-value { font-size: 1.25rem; font-weight: 700; color: #1a2942; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Summary strip ── -->
+<div class="summary-strip">
+  <div class="item">
+    <span class="s-label">Total Paid</span>
+    <span class="s-value text-success">₹{{ total_paid }}</span>
+  </div>
+  <div class="item">
+    <span class="s-label">Pending</span>
+    <span class="s-value text-warning">₹{{ total_pending }}</span>
+  </div>
+  <div class="ms-auto d-flex align-items-center gap-2">
+    {% if user.role == 'tenant' %}
+      <a href="/payments/pay/" class="btn btn-primary btn-sm">
+        <i class="fas fa-rupee-sign me-1"></i>Make Payment
+      </a>
+    {% endif %}
+    {% if user.role in 'admin,owner' %}
+      <a href="/payments/create/" class="btn btn-primary btn-sm">
+        <i class="fas fa-plus me-1"></i>Record Payment
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Payments table ── -->
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Receipt #</th>
+          {% if user.role != 'tenant' %}<th>Tenant</th>{% endif %}
+          <th>Property</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Method</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for p in payments %}
+      <tr>
+        <td class="fw-bold small text-muted font-monospace">{{ p.receipt_number }}</td>
+        {% if user.role != 'tenant' %}
+          <td>
+            <div class="fw-bold small">{{ p.lease.tenant.full_name }}</div>
+          </td>
+        {% endif %}
+        <td class="small text-muted">{{ p.lease.property.title }}</td>
+        <td><span class="badge bg-light text-dark border">{{ p.get_payment_type_display }}</span></td>
+        <td class="fw-bold">
+          ₹{{ p.amount }}
+          {% if p.late_fee %}<div class="text-danger" style="font-size:.72rem">+₹{{ p.late_fee }} late</div>{% endif %}
+        </td>
+        <td class="small">{{ p.payment_date }}</td>
+        <td class="small">
+          {% if p.payment_method == 'upi' %}<i class="fas fa-mobile-alt text-primary me-1"></i>
+          {% elif p.payment_method == 'bank_transfer' %}<i class="fas fa-university text-info me-1"></i>
+          {% elif p.payment_method == 'cash' %}<i class="fas fa-money-bill-wave text-success me-1"></i>
+          {% elif p.payment_method == 'cheque' %}<i class="fas fa-file-alt text-secondary me-1"></i>
+          {% else %}<i class="fas fa-globe text-muted me-1"></i>{% endif %}
+          {{ p.get_payment_method_display }}
+        </td>
+        <td>
+          {% if p.status == 'completed' %}
+            <span class="badge bg-success">Paid</span>
+          {% elif p.status == 'pending' %}
+            <span class="badge bg-warning text-dark">Pending</span>
+          {% elif p.status == 'failed' %}
+            <span class="badge bg-danger">Failed</span>
+          {% else %}
+            <span class="badge bg-secondary">{{ p.get_status_display }}</span>
+          {% endif %}
+        </td>
+        <td><a href="/payments/{{ p.pk }}/" class="btn btn-sm btn-outline-secondary" style="border-radius:6px"><i class="fas fa-eye"></i></a></td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="9" class="text-center text-muted py-5">
+          <i class="fas fa-receipt fa-2x mb-2 d-block opacity-25"></i>
+          No payments recorded yet.
+          {% if user.role == 'tenant' %}
+            <div class="mt-2"><a href="/payments/pay/" class="btn btn-primary btn-sm">Make your first payment</a></div>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

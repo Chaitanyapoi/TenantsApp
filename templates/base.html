@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TenantPro{% endblock %}</title>
+    {% load static %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a2942;
+            --accent: #3b82f6;
+            --accent-light: #dbeafe;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --sidebar-width: 260px;
+            --font-main: 'Segoe UI', system-ui, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: var(--font-main); background: #f0f4f8; color: #1e293b; }
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width); background: var(--primary); color: #fff;
+            position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto;
+            z-index: 1000; transition: transform .3s ease;
+            display: flex; flex-direction: column;
+        }
+        .sidebar-brand { padding: 1.5rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,.1); }
+        .sidebar-brand h4 { margin: 0; font-weight: 700; font-size: 1.2rem; letter-spacing: -.3px; }
+        .sidebar-brand .badge-role { font-size: .65rem; background: var(--accent); padding: 2px 8px; border-radius: 20px; }
+        .sidebar-nav { padding: 1rem 0; flex: 1; }
+        .nav-section { padding: .5rem 1.25rem .25rem; font-size: .65rem; text-transform: uppercase; letter-spacing: 1px; opacity: .5; }
+        .sidebar a.nav-link {
+            color: rgba(255,255,255,.75); padding: .6rem 1.25rem; display: flex; align-items: center; gap: .75rem;
+            border-radius: 0; transition: all .2s; font-size: .9rem;
+        }
+        .sidebar a.nav-link:hover, .sidebar a.nav-link.active {
+            background: rgba(255,255,255,.1); color: #fff; padding-left: 1.6rem;
+        }
+        .sidebar a.nav-link i { width: 18px; text-align: center; opacity: .8; }
+        .sidebar-footer { padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,.1); }
+        /* Main layout */
+        .main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; }
+        .topbar {
+            background: #fff; border-bottom: 1px solid #e2e8f0; padding: .75rem 1.5rem;
+            display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100;
+        }
+        .topbar .page-title { font-weight: 600; font-size: 1rem; color: var(--primary); margin: 0; }
+        .topbar .user-info { display: flex; align-items: center; gap: .75rem; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff;
+                   display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: .85rem; }
+        .content-area { padding: 1.5rem; }
+        /* Cards */
+        .stat-card {
+            background: #fff; border-radius: 12px; padding: 1.25rem; border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,.05);
+        }
+        .stat-card .stat-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
+        .stat-card .stat-label { font-size: .8rem; color: #64748b; }
+        .card { border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+        .card-header { background: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 600; padding: 1rem 1.25rem; border-radius: 12px 12px 0 0 !important; }
+        .table th { font-size: .8rem; text-transform: uppercase; letter-spacing: .5px; color: #64748b; font-weight: 600; }
+        .badge { font-size: .7rem; font-weight: 500; }
+        .btn-primary { background: var(--accent); border-color: var(--accent); }
+        .btn-primary:hover { background: #2563eb; border-color: #2563eb; }
+        .form-label { font-size: .85rem; font-weight: 500; color: #374151; }
+        .form-control, .form-select { border-radius: 8px; border-color: #d1d5db; font-size: .9rem; }
+        .form-control:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+        .property-card { transition: transform .2s, box-shadow .2s; }
+        .property-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.1) !important; }
+        .status-available { background: #d1fae5; color: #065f46; }
+        .status-occupied { background: #fee2e2; color: #991b1b; }
+        .status-maintenance { background: #fef3c7; color: #92400e; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-wrapper { margin-left: 0; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% if user.is_authenticated %}
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <h4><i class="fas fa-building me-2"></i>TenantPro</h4>
+        <span class="badge-role">{{ user.get_role_display }}</span>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Main</div>
+        <a href="{{ user.get_dashboard_url }}" class="nav-link {% if request.path == user.get_dashboard_url %}active{% endif %}">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+
+        {% if user.role == 'admin' or user.is_staff %}
+        <div class="nav-section">Management</div>
+        <a href="/owners/list/" class="nav-link"><i class="fas fa-user-tie"></i> Owners</a>
+        <a href="/tenants/list/" class="nav-link"><i class="fas fa-users"></i> Tenants</a>
+        <a href="/properties/" class="nav-link"><i class="fas fa-building"></i> Properties</a>
+        <a href="/tenants/leases/" class="nav-link"><i class="fas fa-file-contract"></i> Leases</a>
+        <a href="/payments/" class="nav-link"><i class="fas fa-credit-card"></i> Payments</a>
+        {% endif %}
+
+        {% if user.role == 'owner' %}
+        <div class="nav-section">My Business</div>
+        <a href="/properties/" class="nav-link"><i class="fas fa-building"></i> My Properties</a>
+        <a href="/properties/create/" class="nav-link"><i class="fas fa-plus-circle"></i> Add Property</a>
+        <a href="/tenants/leases/" class="nav-link"><i class="fas fa-file-contract"></i> Leases</a>
+        <a href="/tenants/list/" class="nav-link"><i class="fas fa-users"></i> My Tenants</a>
+        <a href="/payments/" class="nav-link"><i class="fas fa-credit-card"></i> Payments</a>
+        <a href="/payments/create/" class="nav-link"><i class="fas fa-plus"></i> Record Payment</a>
+        {% endif %}
+
+        {% if user.role == 'tenant' %}
+        <div class="nav-section">My Rental</div>
+        <a href="/properties/" class="nav-link"><i class="fas fa-search"></i> Browse Properties</a>
+        <a href="/tenants/leases/" class="nav-link"><i class="fas fa-file-contract"></i> My Lease</a>
+        <a href="/payments/" class="nav-link"><i class="fas fa-receipt"></i> Payment History</a>
+        <a href="/payments/pay/" class="nav-link" style="color:#6ee7b7"><i class="fas fa-rupee-sign"></i> Make Payment</a>
+        {% endif %}
+
+        <div class="nav-section">Account</div>
+        <a href="/accounts/profile/" class="nav-link"><i class="fas fa-user-cog"></i> Profile</a>
+        {% if user.role == 'owner' %}<a href="/owners/profile/edit/" class="nav-link"><i class="fas fa-edit"></i> Owner Profile</a>{% endif %}
+        {% if user.role == 'tenant' %}<a href="/tenants/profile/edit/" class="nav-link"><i class="fas fa-edit"></i> Tenant Profile</a>{% endif %}
+    </nav>
+    <div class="sidebar-footer">
+        <a href="/accounts/logout/" class="nav-link text-danger p-0"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+</div>
+
+<div class="main-wrapper">
+    <div class="topbar">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-sm btn-light d-md-none" onclick="document.getElementById('sidebar').classList.toggle('show')">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h6 class="page-title">{% block page_title %}Dashboard{% endblock %}</h6>
+        </div>
+        <div class="user-info">
+            <div class="avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+            <div>
+                <div style="font-size:.85rem; font-weight:600;">{{ user.get_full_name|default:user.username }}</div>
+                <div style="font-size:.7rem; color:#64748b;">{{ user.get_role_display }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="content-area">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mb-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+</div>
+{% else %}
+{% block auth_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

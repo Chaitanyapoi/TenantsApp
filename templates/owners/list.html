@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Owners{% endblock %}
+{% block page_title %}Property Owners{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>All Owners <span class="badge bg-secondary ms-1">{{ owners|length }}</span></span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Owner</th><th>Contact</th><th>Properties</th><th>PAN</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for owner in owners %}
+            <tr>
+                <td><div class="fw-bold">{{ owner.full_name }}</div><div class="text-muted small">{{ owner.user.email }}</div></td>
+                <td>{{ owner.user.phone|default:"—" }}</td>
+                <td><span class="badge bg-primary">{{ owner.total_properties }}</span></td>
+                <td>{{ owner.pan_number|default:"—" }}</td>
+                <td><a href="#" class="btn btn-sm btn-outline-primary">View</a></td>
+            </tr>
+            {% empty %}<tr><td colspan="5" class="text-center text-muted py-4">No owners found</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

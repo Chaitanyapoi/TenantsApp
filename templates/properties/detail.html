@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}{{ property.title }}{% endblock %}
+{% block page_title %}Property Details{% endblock %}
+{% block content %}
+<div class="row g-3">
+    <div class="col-md-8">
+        <div class="card overflow-hidden">
+            {% if property.image %}<img src="{{ property.image.url }}" class="w-100" style="height:280px;object-fit:cover">
+            {% else %}<div style="height:220px;background:linear-gradient(135deg,#1a2942,#2563eb);display:flex;align-items:center;justify-content:center;color:#fff;font-size:4rem"><i class="fas fa-building"></i></div>{% endif %}
+            <div class="p-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h4 class="fw-bold">{{ property.title }}</h4>
+                    <span class="badge fs-6 {% if property.status == 'available' %}status-available{% else %}status-occupied{% endif %}">{{ property.get_status_display }}</span>
+                </div>
+                <p class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ property.address }}, {{ property.city }}, {{ property.state }} - {{ property.pincode }}</p>
+                <div class="row g-3 my-2">
+                    <div class="col-4 text-center"><div class="stat-icon bg-primary bg-opacity-10 mx-auto mb-1"><i class="fas fa-bed text-primary"></i></div><div class="fw-bold">{{ property.bedrooms }}</div><div class="small text-muted">Bedrooms</div></div>
+                    <div class="col-4 text-center"><div class="stat-icon bg-success bg-opacity-10 mx-auto mb-1"><i class="fas fa-bath text-success"></i></div><div class="fw-bold">{{ property.bathrooms }}</div><div class="small text-muted">Bathrooms</div></div>
+                    <div class="col-4 text-center"><div class="stat-icon bg-warning bg-opacity-10 mx-auto mb-1"><i class="fas fa-ruler-combined text-warning"></i></div><div class="fw-bold">{{ property.area_sqft }}</div><div class="small text-muted">Sqft</div></div>
+                </div>
+                {% if property.description %}<p class="mt-3">{{ property.description }}</p>{% endif %}
+                {% if property.amenities %}<div class="mt-3"><h6 class="fw-bold">Amenities</h6><div class="d-flex flex-wrap gap-2">{% for a in property.get_amenities_list %}<span class="badge bg-light text-dark border">{{ a }}</span>{% endfor %}</div></div>{% endif %}
+            
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h6 class="fw-bold mb-3">Pricing</h6>
+            <div class="d-flex justify-content-between mb-2"><span class="text-muted">Monthly Rent</span><span class="fw-bold text-primary fs-5">₹{{ property.monthly_rent }}</span></div>
+            <div class="d-flex justify-content-between"><span class="text-muted">Security Deposit</span><span class="fw-bold">₹{{ property.security_deposit }}</span></div>
+        </div>
+        <div class="card p-3">
+            <h6 class="fw-bold mb-3">Owner Info</h6>
+            <div class="fw-bold">{{ property.owner.full_name }}</div>
+            <div class="text-muted small">{{ property.owner.user.phone|default:"Contact for details" }}</div>
+           
+        </div>
+        {% if user.role == 'owner' and property.owner.user == user %}
+        <div class="d-grid gap-2 mt-3">
+            <a href="/properties/{{ property.pk }}/edit/" class="btn btn-primary">Edit Property</a>
+            <a href="/properties/{{ property.pk }}/delete/" class="btn btn-outline-danger">Delete</a>
+             <a href="/properties/{{ property.pk }}/delete/" class="btn btn-outline-danger">Delete</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

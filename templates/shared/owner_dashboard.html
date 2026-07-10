@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Owner Dashboard{% endblock %}
+{% block page_title %}Owner Dashboard{% endblock %}
+{% block content %}
+<div class="mb-3"><span class="text-muted small">Welcome back, </span><strong>{{ owner.full_name }}</strong></div>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div><div class="stat-value">{{ total_properties }}</div><div class="stat-label">My Properties</div></div>
+                <div class="stat-icon" style="background:#dbeafe;color:#2563eb"><i class="fas fa-building"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div><div class="stat-value">{{ occupied }}</div><div class="stat-label">Occupied</div></div>
+                <div class="stat-icon" style="background:#fce7f3;color:#9d174d"><i class="fas fa-key"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div><div class="stat-value">{{ available }}</div><div class="stat-label">Available</div></div>
+                <div class="stat-icon" style="background:#d1fae5;color:#059669"><i class="fas fa-check-circle"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div><div class="stat-value" style="font-size:1.2rem">₹{{ total_income }}</div><div class="stat-label">Total Income</div></div>
+                <div class="stat-icon" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-rupee-sign"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row g-3">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                My Properties <a href="/properties/create/" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i>Add</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Title</th><th>City</th><th>Rent</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for p in properties|slice:":5" %}
+                    <tr>
+                        <td><a href="/properties/{{ p.pk }}/" class="fw-bold text-decoration-none">{{ p.title }}</a></td>
+                        <td class="small text-muted">{{ p.city }}</td>
+                        <td class="fw-bold">₹{{ p.monthly_rent }}</td>
+                        <td><span class="badge {% if p.status == 'available' %}status-available{% elif p.status == 'occupied' %}status-occupied{% else %}status-maintenance{% endif %}">{{ p.get_status_display }}</span></td>
+                    </tr>
+                    {% empty %}<tr><td colspan="4" class="text-center text-muted py-3 small">No properties yet. <a href="/properties/create/">Add one!</a></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                Recent Payments <a href="/payments/" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Tenant</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for p in recent_payments %}
+                    <tr>
+                        <td class="small">{{ p.lease.tenant.full_name }}</td>
+                        <td class="fw-bold">₹{{ p.amount }}</td>
+                        <td class="small">{{ p.payment_date }}</td>
+                        <td>{% if p.status == 'completed' %}<span class="badge bg-success">Paid</span>{% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}</td>
+                    </tr>
+                    {% empty %}<tr><td colspan="4" class="text-center text-muted py-3 small">No payments recorded</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3">
+            <h6 class="fw-bold mb-3">Quick Actions</h6>
+            <div class="d-grid gap-2">
+                <a href="/properties/create/" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Add Property</a>
+                <a href="/tenants/leases/create/" class="btn btn-outline-primary btn-sm"><i class="fas fa-file-contract me-1"></i>Create Lease</a>
+                <a href="/payments/create/" class="btn btn-outline-success btn-sm"><i class="fas fa-rupee-sign me-1"></i>Record Payment</a>
+                <a href="/tenants/list/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-users me-1"></i>My Tenants</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
